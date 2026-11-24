@@ -174,4 +174,3 @@ jobs:
           name: measurements-${{ matrix.project }}-${{ matrix.slug }}
           path: ${{ runner.temp }}/results/
           retention-days: 30
-
