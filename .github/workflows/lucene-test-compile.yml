@@ -1,0 +1,71 @@
+name: Lucene Test Compilation - Monk CI vs Blacksmith
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    name: ${{ matrix.provider }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - provider: Monk CI
+            runner: monkci-ubuntu-24.04-32
+            artifact: monkci
+          - provider: Blacksmith
+            runner: blacksmith-32vcpu-ubuntu-2404
+            artifact: blacksmith
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Record hardware
+        run: |
+          mkdir -p "$RUNNER_TEMP/results"
+          { date -u; nproc; lscpu; free -b; df -h; cat /etc/os-release; } > "$RUNNER_TEMP/results/hardware.txt"
+          test "$(nproc)" -eq 32
+      - uses: actions/checkout@v4
+        with:
+          repository: apache/lucene
+          ref: 51190f35a16d2ce433139abfe0fd8365791b352a
+          persist-credentials: false
+      - name: Record source
+        run: |
+          { echo "Workflow $GITHUB_SHA"; git rev-parse HEAD; } > "$RUNNER_TEMP/results/source.txt"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21.0.13+9.0.LTS'
+      - name: Configure Java build
+        run: |
+          echo "GRADLE_USER_HOME=$RUNNER_TEMP/isolated-gradle" >> "$GITHUB_ENV"
+          { java -version; javac -version; cat gradle/wrapper/gradle-wrapper.properties; } > "$RUNNER_TEMP/results/toolchain.txt" 2>&1
+      - name: Measure workload
+        run: |
+          /usr/bin/time -v -o "$RUNNER_TEMP/results/build-time.txt" bash -e -o pipefail -c './gradlew --no-build-cache --console=plain testClasses' 2>&1 | tee "$RUNNER_TEMP/results/build.log"
+      - name: Verify output
+        run: |
+          test -n "$(find lucene/core/build -name 'TestIndexWriter.class' -print -quit)"
+      - name: Publish measurements
+        if: always()
+        env:
+          PROVIDER: ${{ matrix.provider }}
+          OUTCOME: ${{ job.status }}
+        run: |
+          {
+            echo "## Lucene Test Compilation / $PROVIDER"
+            echo "Outcome: $OUTCOME"
+            echo 'One sample. Dependency downloads included; queue and setup excluded from workload timing.'
+            echo '\`\`\`text'
+            cat "$RUNNER_TEMP/results/build-time.txt" 2>/dev/null || true
+            echo '\`\`\`'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: measurements-${{ matrix.artifact }}
+          path: ${{ runner.temp }}/results/
+          retention-days: 30
