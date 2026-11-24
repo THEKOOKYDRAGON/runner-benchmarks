@@ -1,0 +1,177 @@
+name: Language Build Coverage - Monk CI vs Blacksmith
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    name: ${{ matrix.language }} / ${{ matrix.project }} / ${{ matrix.provider }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - {"language":"Java/JVM","project":"Kafka","repository":"apache/kafka","ref":"1bcb23135e142d448081dfdb6b6b1ecc505e08b9","tool":"21.0.13+9.0.LTS","command":"./gradlew --no-build-cache --console=plain build -x test","verify":"find core/build/libs -name 'kafka_*.jar' -type f | grep .","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Java/JVM","project":"Kafka","repository":"apache/kafka","ref":"1bcb23135e142d448081dfdb6b6b1ecc505e08b9","tool":"21.0.13+9.0.LTS","command":"./gradlew --no-build-cache --console=plain build -x test","verify":"find core/build/libs -name 'kafka_*.jar' -type f | grep .","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Java/JVM","project":"Pulsar","repository":"apache/pulsar","ref":"4c493c05b3eb28d0247948d47e0b3d30fc699f49","tool":"21.0.13+9.0.LTS","command":"./gradlew --no-build-cache --console=plain :pulsar-broker:assemble","verify":"find pulsar-broker/build/libs -name '*.jar' -type f | grep .","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Java/JVM","project":"Pulsar","repository":"apache/pulsar","ref":"4c493c05b3eb28d0247948d47e0b3d30fc699f49","tool":"21.0.13+9.0.LTS","command":"./gradlew --no-build-cache --console=plain :pulsar-broker:assemble","verify":"find pulsar-broker/build/libs -name '*.jar' -type f | grep .","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Java/JVM","project":"Lucene","repository":"apache/lucene","ref":"51190f35a16d2ce433139abfe0fd8365791b352a","tool":"21.0.13+9.0.LTS","command":"./gradlew --no-build-cache --console=plain assemble","verify":"find lucene/core/build -name 'lucene-core-*.jar' -type f | grep .","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Java/JVM","project":"Lucene","repository":"apache/lucene","ref":"51190f35a16d2ce433139abfe0fd8365791b352a","tool":"21.0.13+9.0.LTS","command":"./gradlew --no-build-cache --console=plain assemble","verify":"find lucene/core/build -name 'lucene-core-*.jar' -type f | grep .","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Java/JVM","project":"BookKeeper","repository":"apache/bookkeeper","ref":"75f65df7b487a9ee29817dc849a40f627c9857b7","tool":"17.0.17+10","command":"mvn -B -ntp -T 1C -Dmaven.repo.local=\"$RUNNER_TEMP/isolated-m2\" -DskipTests -pl bookkeeper-server -am clean package","verify":"test -s bookkeeper-server/target/bookkeeper-server-4.17.2.jar","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Java/JVM","project":"BookKeeper","repository":"apache/bookkeeper","ref":"75f65df7b487a9ee29817dc849a40f627c9857b7","tool":"17.0.17+10","command":"mvn -B -ntp -T 1C -Dmaven.repo.local=\"$RUNNER_TEMP/isolated-m2\" -DskipTests -pl bookkeeper-server -am clean package","verify":"test -s bookkeeper-server/target/bookkeeper-server-4.17.2.jar","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Java/JVM","project":"Artemis","repository":"apache/artemis","ref":"2c3903ff71de7ecc6830d5f051dfc94d6df9b187","tool":"17.0.17+10","command":"mvn -B -ntp -T 1C -Dmaven.repo.local=\"$RUNNER_TEMP/isolated-m2\" -DskipTests -pl artemis-server -am clean package","verify":"test -s artemis-server/target/artemis-server-2.40.0.jar","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Java/JVM","project":"Artemis","repository":"apache/artemis","ref":"2c3903ff71de7ecc6830d5f051dfc94d6df9b187","tool":"17.0.17+10","command":"mvn -B -ntp -T 1C -Dmaven.repo.local=\"$RUNNER_TEMP/isolated-m2\" -DskipTests -pl artemis-server -am clean package","verify":"test -s artemis-server/target/artemis-server-2.40.0.jar","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Rust","project":"Zed","repository":"zed-industries/zed","ref":"b0911ccc9e8bb2b9eab4cc53ec2c98b0471e2759","tool":"1.95.0","command":"cargo +1.95.0 build --release --locked","verify":"test -s target/release/zed","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Rust","project":"Zed","repository":"zed-industries/zed","ref":"b0911ccc9e8bb2b9eab4cc53ec2c98b0471e2759","tool":"1.95.0","command":"cargo +1.95.0 build --release --locked","verify":"test -s target/release/zed","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Rust","project":"Helix","repository":"helix-editor/helix","ref":"9de242bfac2aac9dfd0e4496eb25190e85c24e69","tool":"1.95.0","command":"cargo +1.95.0 build --release --locked --bin hx","verify":"target/release/hx --version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Rust","project":"Helix","repository":"helix-editor/helix","ref":"9de242bfac2aac9dfd0e4496eb25190e85c24e69","tool":"1.95.0","command":"cargo +1.95.0 build --release --locked --bin hx","verify":"target/release/hx --version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Rust","project":"ripgrep","repository":"BurntSushi/ripgrep","ref":"4649aa9700619f94cf9c66876e9549d83420e16c","tool":"1.95.0","command":"cargo +1.95.0 build --release --locked --bin rg","verify":"target/release/rg --version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Rust","project":"ripgrep","repository":"BurntSushi/ripgrep","ref":"4649aa9700619f94cf9c66876e9549d83420e16c","tool":"1.95.0","command":"cargo +1.95.0 build --release --locked --bin rg","verify":"target/release/rg --version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Rust","project":"fd","repository":"sharkdp/fd","ref":"d38148f0aabdd073b4080cde770f679f3197b920","tool":"1.95.0","command":"cargo +1.95.0 build --release --locked --bin fd","verify":"target/release/fd --version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Rust","project":"fd","repository":"sharkdp/fd","ref":"d38148f0aabdd073b4080cde770f679f3197b920","tool":"1.95.0","command":"cargo +1.95.0 build --release --locked --bin fd","verify":"target/release/fd --version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Rust","project":"bat","repository":"sharkdp/bat","ref":"25f4f96ea3afb6fe44552f3b38ed8b1540ffa1b3","tool":"1.95.0","command":"cargo +1.95.0 build --release --locked --bin bat","verify":"target/release/bat --version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Rust","project":"bat","repository":"sharkdp/bat","ref":"25f4f96ea3afb6fe44552f3b38ed8b1540ffa1b3","tool":"1.95.0","command":"cargo +1.95.0 build --release --locked --bin bat","verify":"target/release/bat --version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Go","project":"Prometheus","repository":"prometheus/prometheus","ref":"0a41f0000705c69ab8e0f9a723fc73e39ed62b07","tool":"1.27.4","command":"go build -trimpath -o bin/prometheus ./cmd/prometheus","verify":"bin/prometheus --version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Go","project":"Prometheus","repository":"prometheus/prometheus","ref":"0a41f0000705c69ab8e0f9a723fc73e39ed62b07","tool":"1.27.4","command":"go build -trimpath -o bin/prometheus ./cmd/prometheus","verify":"bin/prometheus --version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Go","project":"Caddy","repository":"caddyserver/caddy","ref":"551f793700fe1550845c824470b623fd1aa03d36","tool":"1.27.4","command":"go build -trimpath -o bin/caddy ./cmd/caddy","verify":"bin/caddy version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Go","project":"Caddy","repository":"caddyserver/caddy","ref":"551f793700fe1550845c824470b623fd1aa03d36","tool":"1.27.4","command":"go build -trimpath -o bin/caddy ./cmd/caddy","verify":"bin/caddy version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Go","project":"Hugo","repository":"gohugoio/hugo","ref":"6abdacad3f3fe944ea42177844469139e81feda6","tool":"1.27.4","command":"go build -trimpath -o bin/hugo .","verify":"bin/hugo version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Go","project":"Hugo","repository":"gohugoio/hugo","ref":"6abdacad3f3fe944ea42177844469139e81feda6","tool":"1.27.4","command":"go build -trimpath -o bin/hugo .","verify":"bin/hugo version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Go","project":"etcd","repository":"etcd-io/etcd","ref":"a0614505aff9b8ff469e9c59c2d979a5936d13f4","tool":"1.27.4","command":"bash scripts/build.sh","verify":"bin/etcd --version && bin/etcdctl version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Go","project":"etcd","repository":"etcd-io/etcd","ref":"a0614505aff9b8ff469e9c59c2d979a5936d13f4","tool":"1.27.4","command":"bash scripts/build.sh","verify":"bin/etcd --version && bin/etcdctl version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Go","project":"Traefik","repository":"traefik/traefik","ref":"36b2bd1bd4538dec67b2e7ca6eb395eae47396ee","tool":"1.27.4","command":"make binary","verify":"dist/linux/amd64/traefik version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Go","project":"Traefik","repository":"traefik/traefik","ref":"36b2bd1bd4538dec67b2e7ca6eb395eae47396ee","tool":"1.27.4","command":"make binary","verify":"dist/linux/amd64/traefik version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Node/TypeScript","project":"TypeScript","repository":"microsoft/TypeScript","ref":"c63de15a992d37f0d6cec03ac7631872838602cb","tool":"npm","command":"npm ci --no-audit --no-fund && npm run build","verify":"node built/local/tsc.js --version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Node/TypeScript","project":"TypeScript","repository":"microsoft/TypeScript","ref":"c63de15a992d37f0d6cec03ac7631872838602cb","tool":"npm","command":"npm ci --no-audit --no-fund && npm run build","verify":"node built/local/tsc.js --version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Node/TypeScript","project":"Vite","repository":"vitejs/vite","ref":"2436afef044d90f710fdfd714488a71efdd29092","tool":"10.18.3","command":"pnpm install --frozen-lockfile --store-dir \"$RUNNER_TEMP/pnpm-store\" && pnpm run build","verify":"node packages/vite/bin/vite.js --version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Node/TypeScript","project":"Vite","repository":"vitejs/vite","ref":"2436afef044d90f710fdfd714488a71efdd29092","tool":"10.18.3","command":"pnpm install --frozen-lockfile --store-dir \"$RUNNER_TEMP/pnpm-store\" && pnpm run build","verify":"node packages/vite/bin/vite.js --version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Node/TypeScript","project":"Svelte","repository":"sveltejs/svelte","ref":"b92a55994b7349e5c681df97a571481488020bc4","tool":"10.4.0","command":"pnpm install --frozen-lockfile --store-dir \"$RUNNER_TEMP/pnpm-store\" && pnpm run build","verify":"test -s packages/svelte/compiler/index.js","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Node/TypeScript","project":"Svelte","repository":"sveltejs/svelte","ref":"b92a55994b7349e5c681df97a571481488020bc4","tool":"10.4.0","command":"pnpm install --frozen-lockfile --store-dir \"$RUNNER_TEMP/pnpm-store\" && pnpm run build","verify":"test -s packages/svelte/compiler/index.js","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Node/TypeScript","project":"Vue","repository":"vuejs/core","ref":"5a8aa0b2ba575e098cbb63b396e9bcb751eb3a0f","tool":"10.17.1","command":"pnpm install --frozen-lockfile --store-dir \"$RUNNER_TEMP/pnpm-store\" && pnpm run build","verify":"test -s packages/vue/dist/vue.global.prod.js","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Node/TypeScript","project":"Vue","repository":"vuejs/core","ref":"5a8aa0b2ba575e098cbb63b396e9bcb751eb3a0f","tool":"10.17.1","command":"pnpm install --frozen-lockfile --store-dir \"$RUNNER_TEMP/pnpm-store\" && pnpm run build","verify":"test -s packages/vue/dist/vue.global.prod.js","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+          - {"language":"Node/TypeScript","project":"Prettier","repository":"prettier/prettier","ref":"7a8b05f41574633fd3af5298f3eeaf33567ad3d3","tool":"yarn","command":"yarn install --immutable && yarn run build","verify":"node dist/prettier/bin/prettier.cjs --version","provider":"Monk CI","runner":"monkci-ubuntu-24.04-32","slug":"monkci"}
+          - {"language":"Node/TypeScript","project":"Prettier","repository":"prettier/prettier","ref":"7a8b05f41574633fd3af5298f3eeaf33567ad3d3","tool":"yarn","command":"yarn install --immutable && yarn run build","verify":"node dist/prettier/bin/prettier.cjs --version","provider":"Blacksmith","runner":"blacksmith-32vcpu-ubuntu-2404","slug":"blacksmith"}
+    defaults:
+      run:
+        shell: bash
+    env:
+      BUILD_COMMAND: ${{ matrix.command }}
+      VERIFY_COMMAND: ${{ matrix.verify }}
+      PROJECT: ${{ matrix.project }}
+      LANGUAGE: ${{ matrix.language }}
+      TOOL: ${{ matrix.tool }}
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      RUSTC_WRAPPER: ''
+      RUSTC_WORKSPACE_WRAPPER: ''
+    steps:
+      - name: Record hardware
+        run: |
+          mkdir -p "$RUNNER_TEMP/results"
+          { date -u; nproc; lscpu; free -b; df -h; cat /etc/os-release; } > "$RUNNER_TEMP/results/hardware.txt"
+          test "$(nproc)" -eq 32
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repository }}
+          ref: ${{ matrix.ref }}
+          persist-credentials: false
+          submodules: recursive
+      - name: Configure isolated dependency directories
+        run: |
+          {
+            echo "GRADLE_USER_HOME=$RUNNER_TEMP/gradle"
+            echo "npm_config_cache=$RUNNER_TEMP/npm-cache"
+            echo "YARN_GLOBAL_FOLDER=$RUNNER_TEMP/yarn-global"
+            echo "GOCACHE=$RUNNER_TEMP/go-build"
+            echo "GOMODCACHE=$RUNNER_TEMP/go-mod"
+            echo "GOTOOLCHAIN=local"
+            echo "MAVEN_OPTS=-Xmx8g -XX:ActiveProcessorCount=32"
+          } >> "$GITHUB_ENV"
+          { echo "Workflow $GITHUB_SHA"; git rev-parse HEAD; printf '%s\n' "$BUILD_COMMAND"; } > "$RUNNER_TEMP/results/source.txt"
+      - uses: actions/setup-java@v4
+        if: matrix.language == 'Java/JVM'
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.tool }}
+      - uses: dtolnay/rust-toolchain@1.95.0
+        if: matrix.language == 'Rust'
+      - uses: actions/setup-go@v5
+        if: matrix.language == 'Go'
+        with:
+          go-version: '1.27.4'
+          cache: false
+      - uses: actions/setup-node@v4
+        if: matrix.language == 'Node/TypeScript'
+        with:
+          node-version: '22.14.0'
+      - name: Install native build tools
+        if: matrix.language == 'Rust' || matrix.project == 'BookKeeper'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config libssl-dev cmake
+      - name: Install Maven
+        if: matrix.project == 'BookKeeper' || matrix.project == 'Artemis'
+        run: |
+          curl --fail --location --retry 3 https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.9/apache-maven-3.9.9-bin.tar.gz -o "$RUNNER_TEMP/maven.tar.gz"
+          echo "a555254d6b53d267965a3404ecb14e53c3827c09c3b94b5678835887ab404556bfaf78dcfe03ba76fa2508649dca8531c74bca4d5846513522404d48e8c4ac8b  $RUNNER_TEMP/maven.tar.gz" | sha512sum --check
+          tar -xzf "$RUNNER_TEMP/maven.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-3.9.9/bin" >> "$GITHUB_PATH"
+      - name: Install Zed dependencies
+        if: matrix.project == 'Zed'
+        run: ./script/linux
+      - name: Isolate Rust dependencies
+        if: matrix.language == 'Rust'
+        run: echo "CARGO_HOME=$RUNNER_TEMP/cargo" >> "$GITHUB_ENV"
+      - name: Install package manager
+        if: matrix.language == 'Node/TypeScript'
+        run: |
+          case "$TOOL" in
+            npm) ;;
+            yarn)
+              mkdir -p "$RUNNER_TEMP/package-manager-bin"
+              printf '#!/usr/bin/env bash\nexec node "%s/.yarn/releases/yarn-4.9.2.cjs" "$@"\n' "$GITHUB_WORKSPACE" > "$RUNNER_TEMP/package-manager-bin/yarn"
+              chmod +x "$RUNNER_TEMP/package-manager-bin/yarn"
+              echo "$RUNNER_TEMP/package-manager-bin" >> "$GITHUB_PATH"
+              ;;
+            *) npm install --global "pnpm@$TOOL" ;;
+          esac
+      - name: Pin Traefik WebUI base image
+        if: matrix.project == 'Traefik'
+        run: |
+          sed -i 's|^FROM node:26-alpine3.24$|FROM node:26-alpine3.24@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5|' webui/buildx.Dockerfile
+          grep -F 'sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5' webui/buildx.Dockerfile
+          git diff > "$RUNNER_TEMP/results/source-patch.diff"
+      - name: Record toolchain
+        run: |
+          case "$LANGUAGE" in
+            Java/JVM) { java -version; javac -version; } ;;
+            Rust) cargo +1.95.0 --version; rustc +1.95.0 --version ;;
+            Go) go version ;;
+            Node/TypeScript) node --version; npm --version ;;
+          esac > "$RUNNER_TEMP/results/toolchain.txt" 2>&1
+      - name: Measure workload
+        run: |
+          /usr/bin/time -v -o "$RUNNER_TEMP/results/build-time.txt" bash -e -o pipefail -c "$BUILD_COMMAND" 2>&1 | tee "$RUNNER_TEMP/results/build.log"
+      - name: Verify output
+        run: bash -e -o pipefail -c "$VERIFY_COMMAND"
+      - name: Publish measurements
+        if: always()
+        env:
+          PROVIDER: ${{ matrix.provider }}
+          OUTCOME: ${{ job.status }}
+        run: |
+          {
+            echo "## $PROJECT / $PROVIDER"
+            echo "Outcome: $OUTCOME"
+            echo 'One attempt per provider. Primary comparison uses job start to completion, including setup and cleanup, excluding queue.'
+            echo 'Supplementary build timing includes dependency downloads but excludes setup.'
+            cat "$RUNNER_TEMP/results/build-time.txt" 2>/dev/null || true
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: measurements-${{ matrix.project }}-${{ matrix.slug }}
+          path: ${{ runner.temp }}/results/
+          retention-days: 30
+
