@@ -1,0 +1,11 @@
+workload,date,blacksmith_seconds,monkci_seconds,blacksmith_queue_seconds,monkci_queue_seconds,blacksmith_total_seconds,monkci_total_seconds,run_url
+Kafka,2026-11-20,171.61,148.22,7,10,193,172,https://github.com/THEKOOKYDRAGON/benchmark-kafka/actions/runs/44594019819
+Pulsar broker assembly,2026-11-20,103.38,98.23,36,12,155,124,https://github.com/THEKOOKYDRAGON/pulsar/actions/runs/44600330752
+Helix,2026-11-20,50.54,50.12,6,57,71,121,https://github.com/THEKOOKYDRAGON/benchmark-helix/actions/runs/44594033728
+Zed,2026-11-20,656.81,660.49,7,65,699,761,https://github.com/THEKOOKYDRAGON/benchmark-zed/actions/runs/44594026885
+Traefik,2026-11-20,69.17,74.72,7,152,91,248,https://github.com/THEKOOKYDRAGON/benchmark-traefik/actions/runs/44594041372
+Lucene Assembly,2026-11-24,68.1,76.74,8,8,92,99,https://github.com/THEKOOKYDRAGON/runner-benchmarks/actions/runs/45332944043
+Lucene Test Compilation,2026-11-24,73.59,85.44,7,48,96,147,https://github.com/THEKOOKYDRAGON/runner-benchmarks/actions/runs/45332948095
+Pulsar Broker Test Compilation,2026-11-24,109.36,110.11,7,53,131,175,https://github.com/THEKOOKYDRAGON/runner-benchmarks/actions/runs/45332953160
+TypeScript Build,2026-11-24,12.65,15.91,6,57,37,89,https://github.com/THEKOOKYDRAGON/runner-benchmarks/actions/runs/45332958281
+TypeScript Docker Build,2026-11-24,19.63,52.94,7,161,45,227,https://github.com/THEKOOKYDRAGON/runner-benchmarks/actions/runs/45332962922
