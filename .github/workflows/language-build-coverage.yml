@@ -76,7 +76,8 @@ jobs:
           repository: ${{ matrix.repository }}
           ref: ${{ matrix.ref }}
           persist-credentials: false
-          submodules: recursive
+          # bat ships compiled syntax/theme assets; its obsolete syntax submodules are not needed to build.
+          submodules: ${{ matrix.project == 'bat' && 'false' || 'recursive' }}
       - name: Configure isolated dependency directories
         run: |
           {
